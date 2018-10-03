@@ -63,11 +63,9 @@ const cleanDisk = async (path, now) => {
 }
 
 const secure = async (name, backupPath, password) => {
-  console.log({ name, backupPath, password })
   try {
     let encryptedName = `${backupPath}/${name}.zip`
     await execa.shell(`zip -e ${password} ${encryptedName} ${backupPath}/${name}`)
-    console.log('encryptedName', encryptedName)
     return encryptedName
   } catch (e) {
     console.log(e)

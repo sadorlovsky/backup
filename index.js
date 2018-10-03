@@ -78,7 +78,7 @@ const main = async ({ s3 = false, gzip = false, clean = false, encrypt = false, 
   let backupName = gzip ? `${now}.agz` : `${now}.archive`
   const mongodump = execa.shell(`
     docker run -i --rm --user \`id -u\` \
-    -v ${path}:/data mongo mongodump \
+    -v ${path}:/data mongo:3.6 mongodump \
     --uri ${uri} \
     ${gzip ? '--gzip' : ''} \
     --archive=/data/${backupName} \

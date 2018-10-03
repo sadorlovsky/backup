@@ -76,13 +76,7 @@ const secure = async (name, backupPath, password) => {
 const main = async ({ s3 = false, gzip = false, clean = false, encrypt = false, path = `${process.cwd()}/dumps`, uri = 'mongodb://localhost:27017' } = {}) => {
   const now = format(new Date(), 'YYYY-MM-DD')
   let backupName = gzip ? `${now}.agz` : `${now}.archive`
-  const mongodump = execa.shell(`
-    docker run -i --rm --user \`id -u\` \
-    -v ${path}:/data mongo:3.6 mongodump \
-    --uri ${uri} \
-    ${gzip ? '--gzip' : ''} \
-    --archive=/data/${backupName}
-  `)
+  const mongodump = execa.shell(`docker run -i --rm --user \`id -u\` -v ${path}:/data mongo:3.6 mongodump --uri ${uri} ${gzip ? '--gzip' : ''} --archive=/data/${backupName}`)
   mongodump.stderr.setEncoding('utf8')
   mongodump.stderr.on('data', data => {
     console.log(data)

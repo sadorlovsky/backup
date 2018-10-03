@@ -77,11 +77,11 @@ const main = async ({ s3 = false, gzip = false, clean = false, encrypt = false, 
   const now = format(new Date(), 'YYYY-MM-DD')
   let backupName = gzip ? `${now}.agz` : `${now}.archive`
   const mongodump = execa.shell(`
-    docker run -i --rm --user \`id -u\`
-    -v ${path}:/data mongo mongodump
-    --uri ${uri}
-    ${gzip ? '--gzip' : ''}
-    --archive=/data/${backupName}
+    docker run -i --rm --user \`id -u\` \
+    -v ${path}:/data mongo mongodump \
+    --uri ${uri} \
+    ${gzip ? '--gzip' : ''} \
+    --archive=/data/${backupName} \
     --excludeCollection loggers
   `)
   mongodump.stderr.setEncoding('utf8')

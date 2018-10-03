@@ -65,7 +65,7 @@ const cleanDisk = async (path, now) => {
 const secure = async (name, backupPath, password) => {
   try {
     let enctyptedName = `${name}.zip`
-    zip = await execa.shell(`zip -P ${password} ${enctyptedName} ${backupPath}/${name}`)
+    await execa.shell(`zip -P ${password} ${enctyptedName} ${backupPath}/${name}`)
     return enctyptedName
   } catch (e) {
     console.log(e)
@@ -73,10 +73,17 @@ const secure = async (name, backupPath, password) => {
   }
 }
 
-const main = async ({ s3 = false, gzip = false, clean = false, encrypt = false, path = `${process.cwd()}/dumps`, host = 'localhost', db = 'bm-platform' } = {}) => {
+const main = async ({ s3 = false, gzip = false, clean = false, encrypt = false, path = `${process.cwd()}/dumps`, uri = 'mongodb://localhost:27017' } = {}) => {
   const now = format(new Date(), 'YYYY-MM-DD')
-  const backupName = gzip ? `${now}.agz` : `${now}.archive`
-  const mongodump = execa.shell(`docker run -i --rm --user \`id -u\` -v ${path}:/data mongo mongodump --host ${host} --db ${db} ${gzip ? '--gzip' : ''} --archive=/data/${backupName} --excludeCollection loggers`)
+  let backupName = gzip ? `${now}.agz` : `${now}.archive`
+  const mongodump = execa.shell(`
+    docker run -i --rm --user \`id -u\`
+    -v ${path}:/data mongo mongodump
+    --uri ${uri}
+    ${gzip ? '--gzip' : ''}
+    --archive=/data/${backupName}
+    --excludeCollection loggers
+  `)
   mongodump.stderr.setEncoding('utf8')
   mongodump.stderr.on('data', data => {
     console.log(data)
@@ -89,7 +96,7 @@ const main = async ({ s3 = false, gzip = false, clean = false, encrypt = false, 
       backupName = await secure(backupName, path, encrypt)
     }
 
-    let outputPath = `${path}/${backupName}`;
+    let outputPath = `${path}/${backupName}`
     if (clean) {
       await cleanDisk(path, now)
     }
@@ -115,6 +122,5 @@ main({
   clean: cli.flags.clean,
   encrypt: cli.flags.encrypt,
   path: process.env.BACKUP_PATH,
-  host: process.env.MONGO_HOST,
-  db: process.env.MONGO_DB
+  uri: process.env.MONGO_URI
 })

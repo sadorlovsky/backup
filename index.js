@@ -81,8 +81,7 @@ const main = async ({ s3 = false, gzip = false, clean = false, encrypt = false, 
     -v ${path}:/data mongo:3.6 mongodump \
     --uri ${uri} \
     ${gzip ? '--gzip' : ''} \
-    --archive=/data/${backupName} \
-    --excludeCollection loggers
+    --archive=/data/${backupName}
   `)
   mongodump.stderr.setEncoding('utf8')
   mongodump.stderr.on('data', data => {
